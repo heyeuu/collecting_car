@@ -1,11 +1,7 @@
-#include <Arduino.h>
-#include <ESP32Servo.h>
-
 #include "pins.hpp"
-
+#include <Arduino.h>
 void setup() {
     // put your setup code here, to run once:
-
     pinMode(LED_PIN, OUTPUT);
 }
 
