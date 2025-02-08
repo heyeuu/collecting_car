@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 constexpr uint8_t led_pin = 2;
+
 void setup() {
     // put your setup code here, to run once:
     pinMode(led_pin, OUTPUT);
