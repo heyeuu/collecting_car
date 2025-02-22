@@ -21,12 +21,21 @@ const int ledPin = 2;
 float joystick_x = 0;
 float joystick_y = 0;
 
-const char* JOYSTICK;
-
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
-const char index_html[] PROGMEM = R"rawliteral(
+
+void notifyClients();
+void handleWebSocketMessage(void* arg, uint8_t* data, size_t len);
+void onEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type,
+    void* arg, uint8_t* data, size_t len);
+void initWebSocket();
+String processor(const String& var);
+String replacePlaceholders(String html);
+void handle_root(AsyncWebServerRequest* request);
+
+const char index_html[] PROGMEM
+    = R"rawliteral(
 <!DOCTYPE HTML>
 <html>
 
@@ -278,6 +287,36 @@ const char index_html[] PROGMEM = R"rawliteral(
 </html>
 )rawliteral";
 
+void setup() {
+    // Serial port for debugging purposes
+    Serial.begin(115200);
+
+    pinMode(ledPin, OUTPUT);
+    digitalWrite(ledPin, LOW);
+
+    // Connect to Wi-Fi
+    WiFi.mode(WIFI_AP);
+    WiFi.softAPConfig(IPAddress(192, 168, 233, 233), IPAddress(192, 168, 233, 0),
+        IPAddress(255, 255, 255, 0));
+
+    WiFi.softAP(wifi_name);
+    // Print ESP Local IP Address
+    Serial.println(WiFi.localIP());
+
+    initWebSocket();
+
+    // Route for root / web page
+    server.on("/", HTTP_GET, handle_root);
+    // Start server
+    server.begin();
+}
+
+void loop() {
+    ws.cleanupClients();
+    digitalWrite(ledPin, ledState);
+    Serial.println("X" + String(joystick_x) + "Y" + String(joystick_y));
+}
+
 void notifyClients() {
     ws.textAll(String(ledState));
     ws.textAll(String("{ \"X\": " + String(joystick_x) + ", \"Y\": " + String(joystick_y) + " }"));
@@ -358,34 +397,4 @@ void handle_root(AsyncWebServerRequest* request) {
     html = replacePlaceholders(html);
     request->send(200, "text/html", html);
     // request->send_P(200, "text/html", index_html, processor);
-}
-
-void setup() {
-    // Serial port for debugging purposes
-    Serial.begin(115200);
-
-    pinMode(ledPin, OUTPUT);
-    digitalWrite(ledPin, LOW);
-
-    // Connect to Wi-Fi
-    WiFi.mode(WIFI_AP);
-    WiFi.softAPConfig(IPAddress(192, 168, 233, 233), IPAddress(192, 168, 233, 0),
-        IPAddress(255, 255, 255, 0));
-
-    WiFi.softAP(wifi_name);
-    // Print ESP Local IP Address
-    Serial.println(WiFi.localIP());
-
-    initWebSocket();
-
-    // Route for root / web page
-    server.on("/", HTTP_GET, handle_root);
-    // Start server
-    server.begin();
-}
-
-void loop() {
-    ws.cleanupClients();
-    digitalWrite(ledPin, ledState);
-    Serial.println("X" + String(joystick_x) + "Y" + String(joystick_y));
 }
