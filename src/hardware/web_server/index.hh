@@ -109,6 +109,12 @@ const char index_html[] PROGMEM
             top: 50%;
             transform: translate(-50%, -50%);
         }
+
+        .velocity {
+            font-size: 1.0rem;
+            color: #8c8c8c;
+            font-weight: bold;
+        }
     </style>
     <title>ESP Web Server</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -127,9 +133,9 @@ const char index_html[] PROGMEM
             <div id="joystick-container">
                 <div id="joystick"></div>
             </div>
-            <p class="direction">direction:<br><span id="direction">%DIRECTION%</span><br>
-            </p>
-
+            <p class="direction">direction:<br><span id="direction">%DIRECTION%</span><br></p>
+            <p class="velocity">left velocity:<span id="left_velocity">%LEFT_VELOCITY%</span><br></p>
+            <p class="velocity">right velocity:<span id="right_velocity">%RIGHT_VELOCITY%</span></p>
         </div>
     </div>
     <script>
@@ -156,24 +162,29 @@ const char index_html[] PROGMEM
         }
         function onMessage(event) {
             var message = event.data;
-            if (message === "1" || message === "0") {
-                var state = message === "1" ? "ON" : "OFF";
-                document.getElementById('state').innerHTML = state;
-            }
-
             try {
-                var data = JSON.parse(event.data);
-                if (data && typeof data === "object" && "X" in data && "Y" in data) {
+                var data = JSON.parse(message);
+
+                if ("ledState" in data) {
+                    var state = data.ledState === 1 ? "ON" : "OFF";
+                    document.getElementById('state').innerHTML = state;
+                }
+
+                if ("X" in data && "Y" in data) {
                     var direction = "X: " + data.X.toFixed(2) + " Y: " + data.Y.toFixed(2);
                     document.getElementById('direction').innerHTML = direction;
-                } else {
-                    console.warn("Invalid direction data:", event.data);
+                }
+
+                if ("leftVelocity" in data && "rightVelocity" in data) {
+                    document.getElementById("left_velocity").innerHTML = data.leftVelocity.toFixed(2);
+                    document.getElementById("right_velocity").innerHTML = data.rightVelocity.toFixed(2);
                 }
             } catch (e) {
-                console.warn("Invalid JSON data:", event.data, e);
+                console.warn("Invalid JSON data:", message, e);
             }
-
         }
+
+
 
         function onLoad(event) {
             initWebSocket();
@@ -232,7 +243,7 @@ const char index_html[] PROGMEM
                 joystick.style.left = '50%';
                 joystick.style.top = '50%';
 
-                let direction = { x: 0.0, y: 0.0 };
+                let direction = { x: 0.00, y: 0.00 };
                 sendControlSignal(direction);
             }
 

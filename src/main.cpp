@@ -22,6 +22,9 @@ const int ledPin = 2;
 float joystick_x = 0;
 float joystick_y = 0;
 
+float left_velocity = 0;
+float right_velocity = 0;
+
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
@@ -34,6 +37,7 @@ void initWebSocket();
 String processor(const String& var);
 String replacePlaceholders(String html);
 void handle_root(AsyncWebServerRequest* request);
+void handle_not_find(AsyncWebServerRequest* request);
 
 void setup() {
     // Serial port for debugging purposes
@@ -49,7 +53,7 @@ void setup() {
 
     WiFi.softAP(wifi_name);
     // Print ESP Local IP Address
-    Serial.println(WiFi.localIP());
+    // Serial.println(WiFi.localIP());
 
     initWebSocket();
 
@@ -62,12 +66,18 @@ void setup() {
 void loop() {
     ws.cleanupClients();
     digitalWrite(ledPin, ledState);
-    Serial.println("X" + String(joystick_x) + "Y" + String(joystick_y));
+
+    // Serial.println("X" + String(joystick_x) + "Y" + String(joystick_y));
 }
 
+// void notifyClients() {
+//     ws.textAll(String(ledState));
+//     ws.textAll(String("{ \"X\": " + String(joystick_x) + ", \"Y\": " + String(joystick_y) + " }"));
+//     ws.textAll(String("{ \"leftVelocity\":") + String(left_velocity) + ",\"rightVelocity\":" + String(right_velocity) + "}");
+// }
 void notifyClients() {
-    ws.textAll(String(ledState));
-    ws.textAll(String("{ \"X\": " + String(joystick_x) + ", \"Y\": " + String(joystick_y) + " }"));
+    String message = String("{\"ledState\":") + String(ledState) + ",\"X\":" + String(joystick_x) + ",\"Y\":" + String(joystick_y) + ",\"leftVelocity\":" + String(left_velocity) + ",\"rightVelocity\":" + String(right_velocity) + "}";
+    ws.textAll(message);
 }
 
 void handleWebSocketMessage(void* arg, uint8_t* data, size_t len) {
@@ -131,12 +141,21 @@ String processor(const String& var) {
     if (var == "DIRECTION") {
         return "X:" + String(joystick_x, 2) + "//n" + "Y:" + String(joystick_y, 2);
     }
+    if (var == "LEFT_VELOCITY") {
+        return String(left_velocity, 2);
+    }
+    if (var == "RIGHT_VELOCITY") {
+        return String(right_velocity, 2);
+    }
     return String();
 }
 
 String replacePlaceholders(String html) {
     html.replace("{{STATE}}", processor("STATE"));
     html.replace("{{DIRECTION}}", processor("DIRECTION"));
+    html.replace("{{LEFT_VELOCITY}}", processor("LEFT_VELOCITY"));
+    html.replace("{{RIGHT_VELOCITY}}", processor("RIGHT_VELOCITY"));
+
     return html;
 }
 
@@ -144,5 +163,9 @@ void handle_root(AsyncWebServerRequest* request) {
     String html = web::index_html;
     html = replacePlaceholders(html);
     request->send(200, "text/html", html);
-    // request->send_P(200, "text/html", index_html, processor);
+    // request->send_P(200, "text/html", index_html, processor);)
+}
+
+void handleNotFound(AsyncWebServerRequest* request) {
+    request->send_P(404, "text/plain", "File Not Found");
 }
