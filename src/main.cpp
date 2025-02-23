@@ -1,17 +1,17 @@
 #include <Arduino.h>
 #include <AsyncTCP.h>
 // #include <ESP32Servo.h>
+#include "hardware/motor/motor.hpp"
 #include "hardware/web_server/index.hh"
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <WiFi.h>
 #include <Wire.h>
-// #include "hardware/motor/motor.hpp"
 // #include "hardware/ultrasonic.hpp"
 // #include "pins.hpp"
 
 // Ultrasonic ultrasonic;
-// auto motor1 = Motor();
+auto motor1 = Motor(1);
 
 constexpr auto wifi_name = "Esp32ServerWifi";
 // const char* password = "12345678";
@@ -28,6 +28,7 @@ float right_velocity = 0;
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
+AsyncWebSocket ws_camera_stream("/stream");
 
 void notifyClients();
 void handleWebSocketMessage(void* arg, uint8_t* data, size_t len);
@@ -36,7 +37,10 @@ void onEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType 
 void initWebSocket();
 String processor(const String& var);
 String replacePlaceholders(String html);
+
 void handle_root(AsyncWebServerRequest* request);
+void handle_stream(AsyncWebServerRequest* request);
+
 void handle_not_find(AsyncWebServerRequest* request);
 
 void setup() {
@@ -46,6 +50,7 @@ void setup() {
     pinMode(ledPin, OUTPUT);
     digitalWrite(ledPin, LOW);
 
+    motor1.initialize(2, 0, 16, 1);
     // Connect to Wi-Fi
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(IPAddress(192, 168, 233, 233), IPAddress(192, 168, 233, 0),
@@ -66,15 +71,8 @@ void setup() {
 void loop() {
     ws.cleanupClients();
     digitalWrite(ledPin, ledState);
-
-    // Serial.println("X" + String(joystick_x) + "Y" + String(joystick_y));
 }
 
-// void notifyClients() {
-//     ws.textAll(String(ledState));
-//     ws.textAll(String("{ \"X\": " + String(joystick_x) + ", \"Y\": " + String(joystick_y) + " }"));
-//     ws.textAll(String("{ \"leftVelocity\":") + String(left_velocity) + ",\"rightVelocity\":" + String(right_velocity) + "}");
-// }
 void notifyClients() {
     String message = String("{\"ledState\":") + String(ledState) + ",\"X\":" + String(joystick_x) + ",\"Y\":" + String(joystick_y) + ",\"leftVelocity\":" + String(left_velocity) + ",\"rightVelocity\":" + String(right_velocity) + "}";
     ws.textAll(message);
@@ -169,3 +167,5 @@ void handle_root(AsyncWebServerRequest* request) {
 void handleNotFound(AsyncWebServerRequest* request) {
     request->send_P(404, "text/plain", "File Not Found");
 }
+
+void handle_stream(AsyncWebServerRequest* request) { }
