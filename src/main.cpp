@@ -2,11 +2,12 @@
 #include <AsyncTCP.h>
 // #include <ESP32Servo.h>
 #include "hardware/motor/motor.hpp"
-#include "hardware/web_server/index.hh"
+#include "web_server/index.hh"
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <WiFi.h>
 #include <Wire.h>
+#include <iostream>
 // #include "hardware/ultrasonic.hpp"
 // #include "pins.hpp"
 
@@ -14,21 +15,23 @@
 auto motor1 = Motor(1);
 
 constexpr auto wifi_name = "Esp32ServerWifi";
+
+// constexpr auto wifi_name = "AllianceTeam2.4G";
 // const char* password = "12345678";
 
-bool ledState = 0;
-const int ledPin = 2;
+// bool ledState = 0;
+// const int ledPin = 2;
 
-float joystick_x = 0;
-float joystick_y = 0;
+double joystick_x = 0;
+double joystick_y = 0;
 
-float left_velocity = 0;
-float right_velocity = 0;
+double left_velocity = 0;
+double right_velocity = 0;
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
-AsyncWebSocket ws("/ws");
-AsyncWebSocket ws_camera_stream("/stream");
+AsyncWebSocket wsRobotCmd("/cmd");
+AsyncWebSocket wsCameraStream("/stream");
 
 void notifyClients();
 void handleWebSocketMessage(void* arg, uint8_t* data, size_t len);
@@ -47,10 +50,13 @@ void setup() {
     // Serial port for debugging purposes
     Serial.begin(115200);
 
-    pinMode(ledPin, OUTPUT);
-    digitalWrite(ledPin, LOW);
+    // pinMode(ledPin, OUTPUT);
+    // digitalWrite(ledPin, LOW);
 
     motor1.initialize(2, 0, 16, 1);
+    // WiFi.mode(WIFI_STA);
+    // WiFi.begin(wifi_name, password);
+
     // Connect to Wi-Fi
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(IPAddress(192, 168, 233, 233), IPAddress(192, 168, 233, 0),
@@ -69,13 +75,14 @@ void setup() {
 }
 
 void loop() {
-    ws.cleanupClients();
-    digitalWrite(ledPin, ledState);
+    wsRobotCmd.cleanupClients();
+    // digitalWrite(ledPin, ledState);
+    delay(500);
 }
 
 void notifyClients() {
-    String message = String("{\"ledState\":") + String(ledState) + ",\"X\":" + String(joystick_x) + ",\"Y\":" + String(joystick_y) + ",\"leftVelocity\":" + String(left_velocity) + ",\"rightVelocity\":" + String(right_velocity) + "}";
-    ws.textAll(message);
+    String message = String("{\"ledState\":") + String(ledState) + ",\"xPoint\":" + String(joystick_x) + ",\"yPoint\":" + String(joystick_y) + ",\"leftVelocity\":" + String(left_velocity) + ",\"rightVelocity\":" + String(right_velocity) + "}";
+    wsRobotCmd.textAll(message);
 }
 
 void handleWebSocketMessage(void* arg, uint8_t* data, size_t len) {
@@ -100,8 +107,8 @@ void handleWebSocketMessage(void* arg, uint8_t* data, size_t len) {
                 Serial.println(error.f_str());
                 return;
             } else {
-                joystick_x = doc["x"];
-                joystick_y = doc["y"];
+                joystick_x = doc["xPoint"];
+                joystick_y = doc["yPoint"];
                 notifyClients();
             }
         }
@@ -127,8 +134,8 @@ void onEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType 
 }
 
 void initWebSocket() {
-    ws.onEvent(onEvent);
-    server.addHandler(&ws);
+    wsRobotCmd.onEvent(onEvent);
+    server.addHandler(&wsRobotCmd);
 }
 
 String processor(const String& var) {
@@ -136,9 +143,13 @@ String processor(const String& var) {
     if (var == "STATE") {
         return ledState ? "ON" : "OFF";
     }
-    if (var == "DIRECTION") {
-        return "X:" + String(joystick_x, 2) + "//n" + "Y:" + String(joystick_y, 2);
+    if (var == "X") {
+        return String(joystick_x, 2);
     }
+    if (var == "Y") {
+        return String(joystick_y, 2);
+    }
+
     if (var == "LEFT_VELOCITY") {
         return String(left_velocity, 2);
     }
@@ -150,7 +161,9 @@ String processor(const String& var) {
 
 String replacePlaceholders(String html) {
     html.replace("{{STATE}}", processor("STATE"));
-    html.replace("{{DIRECTION}}", processor("DIRECTION"));
+    html.replace("{{X}}", processor("X"));
+    html.replace("{{Y}}", processor("Y"));
+
     html.replace("{{LEFT_VELOCITY}}", processor("LEFT_VELOCITY"));
     html.replace("{{RIGHT_VELOCITY}}", processor("RIGHT_VELOCITY"));
 

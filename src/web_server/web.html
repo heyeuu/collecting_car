@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<style>
+    #joystick-container {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        background-color: #f0f0f0;
+        border-radius: 50%;
+        border: 2px solid #ccc;
+        margin: 50px 30px;
+        padding: auto;
+    }
+
+    #joystick {
+        position: absolute;
+        width: 70%;
+        height: 70%;
+        background-color: #143642;
+        border-radius: 50%;
+        cursor: pointer;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+
+    #image_container {
+        width: auto;
+        height: auto;
+        display: inline;
+    }
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graceful name Website</title>
+</head>
+
+<body>
+    <h1>Hello, world!</h1>
+    <div class="image_container">
+        <img id="live_image" src="/home/linqinyang/Pictures/BigNoseDog.jpg" alt="live_image">
+    </div>
+
+    <p>leftVelocity:<span id="left_velocity">%LEFT_VELOCITY%</span><br>rightVelocity:<span
+            id="right_velocity">%RIGHT_VELOCITY%</span>
+    </p>
+
+    <div id="joystick-container">
+        <div id="joystick"></div>
+    </div>
+
+    <p>(x:<span id="x_point">%0.00%</span>,y:<span id="y_point">%0.00%</span>)</p>
+
+    <script src="./hello.js"></script>
+
+</html>
+
+
+</body>
