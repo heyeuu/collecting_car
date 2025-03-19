@@ -80,8 +80,6 @@ void setup() {
 void loop() {
     wsRobotCmd.cleanupClients();
     // digitalWrite(ledPin, ledState);
-
-    // Serial.printf("(%2f,%2f)", joystick_x, joystick_y);
 }
 
 void initWiFi() {
