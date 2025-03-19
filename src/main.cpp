@@ -38,7 +38,6 @@ AsyncWebSocket wsRobotCmd("/cmd");
 AsyncWebSocket wsCameraStream("/stream");
 
 void initWiFi();
-void initLittleFS();
 
 void notifyClients();
 void handleWebSocketMessage(void* arg, uint8_t* data, size_t len);
@@ -59,7 +58,6 @@ void setup() {
     // digitalWrite(ledPin, LOW);
 
     motor1.initialize(2, 0, 16, 1);
-    initLittleFS();
     initWiFi();
     // WiFi.mode(WIFI_STA);
     // WiFi.begin(wifi_name, password);
@@ -100,13 +98,6 @@ void initWiFi() {
     WiFi.softAPConfig(IPAddress(192, 168, 233, 233), IPAddress(192, 168, 233, 0),
         IPAddress(255, 255, 255, 0));
     WiFi.softAP(wifi_name);
-}
-
-void initLittleFS() {
-    if (!LITTLEFS.begin(true)) {
-        Serial.println("An error has occurred while mounting LittleFS");
-    }
-    Serial.println("LittleFSmounted successfully");
 }
 
 void notifyClients() {
