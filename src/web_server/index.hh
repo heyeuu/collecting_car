@@ -6,62 +6,129 @@ const char index_html[] PROGMEM
 <!DOCTYPE html>
 <html lang="en">
 
-<style>
-    #joystick-container {
-        position: relative;
-        width: 150px;
-        height: 150px;
-        background-color: #f0f0f0;
-        border-radius: 50%;
-        border: 2px solid #ccc;
-        margin: 50px 30px;
-        padding: auto;
-    }
-
-    #joystick {
-        position: absolute;
-        width: 70%;
-        height: 70%;
-        background-color: #143642;
-        border-radius: 50%;
-        cursor: pointer;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-    }
-
-
-    #image_container {
-        width: auto;
-        height: auto;
-        display: inline;
-    }
-</style>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Graceful name Website</title>
+    <style>
+        #joystick-container {
+            position: absolute;
+            width: 10vw;
+            height: 10vw;
+            bottom: clamp(20px, 0.5vh, 24px);
+            left: 3vw;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            margin: 50px 30px;
+            padding: auto;
+        }
+
+        #joystick {
+            position: absolute;
+            width: 70%;
+            height: 70%;
+            background-color: #143642;
+            border-radius: 50%;
+            cursor: pointer;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .comment_text {
+            color: #1d586c;
+            font-size: 1rem;
+        }
+
+        #point_comment {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+        }
+
+        #velocity_comment {
+            right: 2vw;
+            top: 20%;
+            font-size: clamp(12px, 2vw, 24px);
+            position: absolute;
+        }
+
+        .navigation_bar {
+            color: #b8eaf4;
+            font-size: 2.5rem;
+            left: 50%;
+            position: relative;
+            transform: translateX(-50%);
+            text-align: center;
+            background-color: #081c47;
+            padding: 0.5vw 0.5vw;
+            border-radius: 0.5vw;
+        }
+
+        .avatar {
+            display: flex;
+            left: 2%;
+            position: relative;
+        }
+
+        .avatar img {
+            width: 9vw;
+            height: vw;
+            border-radius: 50%;
+            overflow: hidden;
+            object-fit: cover;
+            margin-right: 1%;
+        }
+
+        .avatar p {
+            height: fit-content;
+            width: auto;
+            color: #1d586c;
+            font-size: clamp(12px, 2vw, 24px);
+            background-color: #80e8f0;
+            padding: 0.5vw 0.5vh;
+            border-radius: 0.5vw;
+            display: inline-block;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        .live_image {
+            height: 100%;
+            bottom: 0vh;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Hello, world!</h1>
-    <div class="image_container">
-      
+    <h1 class="navigation_bar">Hello, world!</h1>
+    <div class="live_image">
+        <div class="avatar">
+        <img src="https://pic1.imgdb.cn/item/67d53bc288c538a9b5beb898.jpg" alt="xxx">
+        <p>hello dog!</p>
     </div>
+        <div class="comment_text">
+            <p id="velocity_comment">leftVelocity:<span id="left_velocity">%LEFT_VELOCITY%</span><br>rightVelocity:<span
+                    id="right_velocity">%RIGHT_VELOCITY%</span>
+            </p>
+        </div>
 
-    <p>leftVelocity:<span id="left_velocity">%LEFT_VELOCITY%</span><br>rightVelocity:<span
-            id="right_velocity">%RIGHT_VELOCITY%</span>
-    </p>
+        <div id="joystick-container">
+            <div id="joystick"></div>
 
-    <div id="joystick-container">
-        <div id="joystick"></div>
+            <div class="comment_text">
+                <p id="point_comment">(x:<span id="x_point">%0.00%</span>,y:<span id="y_point">%0.00%</span>)</p>
+            </div>
+        </div>
     </div>
-
-    <p>(x:<span id="x_point">%0.00%</span>,y:<span id="y_point">%0.00%</span>)</p>
 
     <script>
-var JoystickController = /** @class */ (function () {
+        var JoystickController = /** @class */ (function () {
     function JoystickController(stickID, maxDistance, deadzone) {
         this.stick = document.getElementById(stickID);
         this.maxDistance = maxDistance;
@@ -83,7 +150,8 @@ var JoystickController = /** @class */ (function () {
                 leftVelocityElement.innerText = data.leftVelocity.toFixed(2);
                 rightVelocityElement.innerText = data.rightVelocity.toFixed(2);
             }
-
+            // document.getElementById("x_point")!.innerText = data.xPoint.toFixed(2);
+            // document.getElementById("y_point")!.innerText = data.yPoint.toFixed(2);
         };
         this.initEvents();
     }
@@ -162,9 +230,9 @@ window.addEventListener("load", function () {
 });
 
     </script>
+</body>
 
 </html>
-</body>
 )rawliteral";
 
 }
