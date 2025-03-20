@@ -8,7 +8,8 @@ var JoystickController = /** @class */ (function () {
         this.startY = 0;
         this.touchID = null;
         this.value = { x: 0, y: 0, distance: 0 };
-        this.socket = new WebSocket("wss://".concat(window.location.hostname, "/cmd"));
+        // this.socket = new WebSocket(`wss://${window.location.hostname}/cmd`);
+        this.socket = new WebSocket("wss://192.168.1.199/cmd");
         this.socket.onopen = function () {
             console.log('WebSocket connection established');
             document.getElementById("x_point").innerText = "0.00";

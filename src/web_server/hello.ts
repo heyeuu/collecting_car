@@ -19,7 +19,8 @@ class JoystickController {
         this.touchID = null;
         this.value = { x: 0, y: 0, distance: 0 };
 
-        this.socket = new WebSocket(`wss://${window.location.hostname}/cmd`);
+        // this.socket = new WebSocket(`wss://${window.location.hostname}/cmd`);
+        this.socket = new WebSocket(`wss://192.168.1.199/cmd`);
         this.socket.onopen = () => {
             console.log('WebSocket connection established');
 
@@ -27,7 +28,6 @@ class JoystickController {
             document.getElementById("y_point")!.innerText = "0.00";
             // console.log(document.getElementById("x_point")!.innerText);
             // console.log(document.getElementById("y_point")!.innerText);
-
         }
         this.socket.onerror = (error) => console.error('WebSocket error:', error);
         this.socket.onmessage = function (event) {
