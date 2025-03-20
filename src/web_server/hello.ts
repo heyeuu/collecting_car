@@ -19,7 +19,7 @@ class JoystickController {
         this.touchID = null;
         this.value = { x: 0, y: 0, distance: 0 };
 
-        this.socket = new WebSocket(`ws://${window.location.hostname}/cmd`);
+        this.socket = new WebSocket(`wss://${window.location.hostname}/cmd`);
         this.socket.onopen = () => {
             console.log('WebSocket connection established');
 

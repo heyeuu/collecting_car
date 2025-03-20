@@ -55,17 +55,17 @@ void setup() {
     // pinMode(ledPin, OUTPUT);
     // digitalWrite(ledPin, LOW);
 
-    // initWiFi();
+    initWiFi();
 
-    // initWebSocket();
-    // server.on("/", HTTP_GET, handleRoot);
-    // server.onNotFound(handleNotFound);
-    // server.begin();
-    // digitalWrite(ledPin, HIGH);
-    // Serial.print("ESP32 MAC 地址: ");
-    // Serial.println(WiFi.macAddress());
-    // Serial.println("ip:");
-    // Serial.println(WiFi.localIP());
+    initWebSocket();
+    server.on("/", HTTP_GET, handleRoot);
+    server.onNotFound(handleNotFound);
+    server.begin();
+    digitalWrite(ledPin, HIGH);
+    Serial.print("ESP32 MAC 地址: ");
+    Serial.println(WiFi.macAddress());
+    Serial.println("ip:");
+    Serial.println(WiFi.localIP());
 }
 
 void loop() {
