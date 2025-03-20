@@ -7,7 +7,7 @@ var JoystickController = /** @class */ (function () {
         this.startX = 0;
         this.startY = 0;
         this.touchID = null;
-        this.value = { x: 0, y: 0 };
+        this.value = { x: 0, y: 0, distance: 0 };
         this.socket = new WebSocket("ws://".concat(window.location.hostname, "/cmd"));
         this.socket.onopen = function () {
             console.log('WebSocket connection established');
@@ -84,10 +84,10 @@ var JoystickController = /** @class */ (function () {
         var distance2 = distance < this.deadzone ? 0 : (this.maxDistance / (this.maxDistance - this.deadzone)) * (distance - this.deadzone);
         var xPosition2 = distance2 * Math.cos(angle);
         var yPosition2 = distance2 * Math.sin(angle);
-        this.value = { x: xPosition2 / this.maxDistance, y: yPosition2 / this.maxDistance };
+        this.value = { x: xPosition2 / this.maxDistance, y: yPosition2 / this.maxDistance, distance: distance2 };
         this.updateUI();
         if (this.socket.readyState === WebSocket.OPEN) {
-            this.socket.send(JSON.stringify({ xPoint: this.value.x, yPoint: this.value.y }));
+            this.socket.send(JSON.stringify({ xPoint: this.value.x, yPoint: this.value.y, distance: this.value.distance }));
         }
     };
     JoystickController.prototype.handleUp = function (event) {
@@ -96,10 +96,10 @@ var JoystickController = /** @class */ (function () {
         this.isDragging = false;
         this.stick.style.transition = ".2s";
         this.stick.style.transform = "translate(-50%, -50%)";
-        this.value = { x: 0, y: 0 };
+        this.value = { x: 0, y: 0, distance: 0 };
         this.updateUI();
         if (this.socket.readyState === WebSocket.OPEN) {
-            this.socket.send(JSON.stringify({ xPoint: this.value.x, yPoint: this.value.y }));
+            this.socket.send(JSON.stringify({ xPoint: this.value.x, yPoint: this.value.y, distance: this.value.distance }));
         }
     };
     JoystickController.prototype.updateUI = function () {

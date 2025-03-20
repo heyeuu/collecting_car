@@ -6,7 +6,7 @@ class JoystickController {
     private startX: number;
     private startY: number;
     private touchID: number | null;
-    private value: { x: number, y: number };
+    private value: { x: number, y: number, distance: number };
     private socket: WebSocket;
 
     constructor(stickID: string, maxDistance: number, deadzone: number) {
@@ -17,7 +17,7 @@ class JoystickController {
         this.startX = 0;
         this.startY = 0;
         this.touchID = null;
-        this.value = { x: 0, y: 0 };
+        this.value = { x: 0, y: 0, distance: 0 };
 
         this.socket = new WebSocket(`ws://${window.location.hostname}/cmd`);
         this.socket.onopen = () => {
@@ -113,12 +113,12 @@ class JoystickController {
         const distance2 = distance < this.deadzone ? 0 : (this.maxDistance / (this.maxDistance - this.deadzone)) * (distance - this.deadzone);
         const xPosition2 = distance2 * Math.cos(angle);
         const yPosition2 = distance2 * Math.sin(angle);
-        this.value = { x: xPosition2 / this.maxDistance, y: yPosition2 / this.maxDistance };
+        this.value = { x: xPosition2 / this.maxDistance, y: yPosition2 / this.maxDistance, distance: distance2 };
 
         this.updateUI();
 
         if (this.socket.readyState === WebSocket.OPEN) {
-            this.socket.send(JSON.stringify({ xPoint: this.value.x, yPoint: this.value.y }));
+            this.socket.send(JSON.stringify({ xPoint: this.value.x, yPoint: this.value.y, distance: this.value.distance }));
         }
     }
 
@@ -130,11 +130,11 @@ class JoystickController {
         this.stick.style.transition = ".2s";
         this.stick.style.transform = "translate(-50%, -50%)";
 
-        this.value = { x: 0, y: 0 };
+        this.value = { x: 0, y: 0, distance: 0 };
 
         this.updateUI();
         if (this.socket.readyState === WebSocket.OPEN) {
-            this.socket.send(JSON.stringify({ xPoint: this.value.x, yPoint: this.value.y }));
+            this.socket.send(JSON.stringify({ xPoint: this.value.x, yPoint: this.value.y, distance: this.value.distance }));
         }
     }
 

@@ -2,36 +2,36 @@
 #include <AsyncTCP.h>
 // #include <ESP32Servo.h>
 #include "hardware/motor/motor.hpp"
-#include "web_server/index.hh"
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <WiFi.h>
 #include <Wire.h>
 
-#include <FS.h>
-#include <LITTLEFS.h>
 #include <iostream>
 // #include "hardware/ultrasonic.hpp"
-// #include "pins.hpp"
+#include "pins.hpp"
 
 // Ultrasonic ultrasonic;
 auto motor1 = Motor(1);
+auto motor2 = Motor(1);
+// constexpr auto ssid = "Esp32ServerWifi";
 
-constexpr auto wifi_name = "Esp32ServerWifi";
+constexpr auto ssid = "AllianceTeam2.4G";
+const char* password = "12345678";
 
-// constexpr auto ssid = "AllianceTeam2.4G";
-// const char* password = "12345678";
+IPAddress localIP(192, 168, 1, 199);
+IPAddress gateWay(192, 168, 1, 1);
+IPAddress subnet(255, 255, 255, 0);
 
-// constexpr auto ssid = "AllianceTeam5.2G";
-// const char* password = "rm-alliance.icu";
 bool ledState = 0;
 const int ledPin = 2;
 
-double joystick_x = 0;
-double joystick_y = 0;
+double joystickX = 0;
+double joystickY = 0;
+double distance = 0;
 
-double left_velocity = 0;
-double right_velocity = 0;
+double leftVelocity = 0;
+double rightVelocity = 0;
 
 AsyncWebServer server(80);
 AsyncWebSocket wsRobotCmd("/cmd");
@@ -57,24 +57,17 @@ void setup() {
     // pinMode(ledPin, OUTPUT);
     // digitalWrite(ledPin, LOW);
 
-    motor1.initialize(2, 0, 16, 1);
-    initWiFi();
-    // WiFi.mode(WIFI_STA);
-    // WiFi.begin(wifi_name, password);
+    // initWiFi();
 
-    // WiFi.mode(WIFI_AP);
-    // WiFi.softAPConfig(IPAddress(192, 168, 233, 233), IPAddress(192, 168, 233, 0),
-    //     IPAddress(255, 255, 255, 0));
-    // WiFi.softAP(wifi_name);
+    // initWebSocket();
+    // server.on("/", HTTP_GET, handleRoot);
+    // server.onNotFound(handleNotFound);
+    // server.begin();
+    // digitalWrite(ledPin, HIGH);
+    // Serial.print("ESP32 MAC 地址: ");
+    // Serial.println(WiFi.macAddress());
+    // Serial.println("ip:");
     // Serial.println(WiFi.localIP());
-
-    initWebSocket();
-    // server.serveStatic(const char* uri, fs::FS& fs, const char* path)
-    server.on("/", HTTP_GET, handleRoot);
-    server.serveStatic("/", LITTLEFS, "/");
-    server.onNotFound(handleNotFound);
-    server.begin();
-    digitalWrite(ledPin, HIGH);
 }
 
 void loop() {
@@ -83,23 +76,23 @@ void loop() {
 }
 
 void initWiFi() {
-    // WiFi.mode(WIFI_STA);
-    // WiFi.begin(ssid, password);
-    // Serial.print("Connecting to WiFi ..");
-    // while (WiFi.status() != WL_CONNECTED) {
-    //     Serial.print('.');
-    //     delay(1000);
-    // }
-    // Serial.println(WiFi.localIP());
+    WiFi.mode(WIFI_STA);
+    WiFi.config(localIP, gateWay, subnet);
+    WiFi.begin(ssid, password);
+    Serial.print("Connecting to WiFi ..");
+    while (WiFi.status() != WL_CONNECTED) {
+        Serial.print('.');
+        delay(1000);
+    }
 
-    WiFi.mode(WIFI_AP);
-    WiFi.softAPConfig(IPAddress(192, 168, 233, 233), IPAddress(192, 168, 233, 0),
-        IPAddress(255, 255, 255, 0));
-    WiFi.softAP(wifi_name);
+    // WiFi.mode(WIFI_AP);
+    // WiFi.softAPConfig(IPAddress(192, 168, 233, 233), IPAddress(192, 168, 233, 0),
+    //     IPAddress(255, 255, 255, 0));
+    // WiFi.softAP(ssid);
 }
 
 void notifyClients() {
-    String message = String("{\"xPoint\":") + String(joystick_x) + ",\"yPoint\":" + String(joystick_y) + ",\"leftVelocity\":" + String(left_velocity) + ",\"rightVelocity\":" + String(right_velocity) + "}";
+    String message = String("{\"xPoint\":") + String(joystickX) + ",\"yPoint\":" + String(joystickY) + ",\"leftVelocity\":" + String(leftVelocity) + ",\"rightVelocity\":" + String(rightVelocity) + "}";
     wsRobotCmd.textAll(message);
 }
 
@@ -122,8 +115,9 @@ void handleWebSocketMessage(void* arg, uint8_t* data, size_t len) {
                 Serial.println(error.f_str());
                 return;
             } else {
-                joystick_x = doc["xPoint"];
-                joystick_y = doc["yPoint"];
+                joystickX = doc["xPoint"];
+                joystickY = doc["yPoint"];
+                distance = doc["distance"];
             }
         }
         notifyClients();
@@ -156,17 +150,17 @@ void initWebSocket() {
 String processor(const String& var) {
 
     if (var == "X") {
-        return String(joystick_x, 2);
+        return String(joystickX, 2);
     }
     if (var == "Y") {
-        return String(joystick_y, 2);
+        return String(joystickY, 2);
     }
 
     if (var == "LEFT_VELOCITY") {
-        return String(left_velocity, 2);
+        return String(leftVelocity, 2);
     }
     if (var == "RIGHT_VELOCITY") {
-        return String(right_velocity, 2);
+        return String(rightVelocity, 2);
     }
     return String();
 }
@@ -183,7 +177,6 @@ String processor(const String& var) {
 // }
 
 void handleRoot(AsyncWebServerRequest* request) {
-    request->send(LITTLEFS, "/web.html", "text/html", false, processor);
     // String html = web::index_html;
     // html = replacePlaceholders(html);
     // request->send(200, "text/html", html);
