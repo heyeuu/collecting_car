@@ -1,19 +1,16 @@
 #include <Arduino.h>
 #include <AsyncTCP.h>
 // #include <ESP32Servo.h>
-#include "hardware/motor/motor.hpp"
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <WiFi.h>
 #include <Wire.h>
 
-#include <iostream>
 // #include "hardware/ultrasonic.hpp"
-#include "pins.hpp"
-
+#include "hardware/car/car.hpp"
+// #include "pins.hpp"
 // Ultrasonic ultrasonic;
-auto motor1 = Motor(1);
-auto motor2 = Motor(1);
+Car car;
 // constexpr auto ssid = "Esp32ServerWifi";
 
 constexpr auto ssid = "AllianceTeam2.4G";
@@ -54,6 +51,7 @@ void handleNotFound(AsyncWebServerRequest* request);
 
 void setup() {
     Serial.begin(115200);
+    car.turn(1, 0);
     // pinMode(ledPin, OUTPUT);
     // digitalWrite(ledPin, LOW);
 
