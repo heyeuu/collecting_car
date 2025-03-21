@@ -2,6 +2,7 @@
 #include <AsyncTCP.h>
 // #include <ESP32Servo.h>
 #include <ArduinoJson.h>
+#include <ArduinoWebsockets.h>
 #include <ESPAsyncWebServer.h>
 #include <WiFi.h>
 #include <Wire.h>
